@@ -1,6 +1,7 @@
 import argparse
+import json
 from pathlib import Path
-from .env_tools import init_env, doctor_env
+from .env_tools import init_env, doctor_env, doctor_env_report
 
 def build_parser():
     parser = argparse.ArgumentParser(
@@ -25,6 +26,12 @@ def build_parser():
         action="store_true",
         help="Ignore extra keys in .env that are not in template",
     )
+    p_doc.add_argument(
+        "--format",
+        choices=("text", "json"),
+        default="text",
+        help="Output format for doctor command",
+    )
     return parser
 
 def main(argv=None):
@@ -37,9 +44,19 @@ def main(argv=None):
         return 0 if ok else 1
 
     if args.command == "env" and args.env_command == "doctor":
+        template_path = Path(args.template)
+        env_path = Path(args.env_file)
+        if args.format == "json":
+            report = doctor_env_report(
+                template_path,
+                env_path,
+                allow_extra=args.allow_extra,
+            )
+            print(json.dumps(report, ensure_ascii=True))
+            return 0 if report["ok"] else 1
         ok, msg = doctor_env(
-            Path(args.template),
-            Path(args.env_file),
+            template_path,
+            env_path,
             allow_extra=args.allow_extra,
         )
         print(msg)
