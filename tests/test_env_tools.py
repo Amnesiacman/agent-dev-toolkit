@@ -51,3 +51,13 @@ def test_doctor_report_contains_missing_and_extra(tmp_path: Path):
     assert report["ok"] is False
     assert report["missing"] == ["B"]
     assert report["extra"] == ["C"]
+
+
+def test_doctor_strict_overrides_allow_extra(tmp_path: Path):
+    t = tmp_path / ".env.example"
+    e = tmp_path / ".env"
+    t.write_text("A=1\n", encoding="utf-8")
+    e.write_text("A=1\nB=2\n", encoding="utf-8")
+    report = doctor_env_report(t, e, allow_extra=True, strict=True)
+    assert report["ok"] is False
+    assert report["extra"] == ["B"]

@@ -19,12 +19,18 @@ def init_env(template_path: Path, output_path: Path, force: bool = False):
     output_path.write_text(template_path.read_text(encoding="utf-8"), encoding="utf-8")
     return True, f"Created {output_path} from {template_path}"
 
-def doctor_env_report(template_path: Path, env_path: Path, allow_extra: bool = False):
+def doctor_env_report(
+    template_path: Path,
+    env_path: Path,
+    allow_extra: bool = False,
+    strict: bool = False,
+):
     report = {
         "ok": False,
         "missing": [],
         "extra": [],
         "allow_extra": allow_extra,
+        "strict": strict,
         "message": "",
     }
     if not template_path.exists():
@@ -37,12 +43,12 @@ def doctor_env_report(template_path: Path, env_path: Path, allow_extra: bool = F
     env_keys = set(parse_template_keys(env_path.read_text(encoding="utf-8")))
     missing = sorted(template_keys - env_keys)
     extra = sorted(env_keys - template_keys)
-    if allow_extra:
+    if allow_extra and not strict:
         extra = []
     report["missing"] = missing
     report["extra"] = extra
     if not missing and not extra:
-        if allow_extra:
+        if allow_extra and not strict:
             report["ok"] = True
             report["message"] = "Environment looks good: no missing keys."
             return report
@@ -57,6 +63,16 @@ def doctor_env_report(template_path: Path, env_path: Path, allow_extra: bool = F
     report["message"] = "\n".join(lines)
     return report
 
-def doctor_env(template_path: Path, env_path: Path, allow_extra: bool = False):
-    report = doctor_env_report(template_path, env_path, allow_extra=allow_extra)
+def doctor_env(
+    template_path: Path,
+    env_path: Path,
+    allow_extra: bool = False,
+    strict: bool = False,
+):
+    report = doctor_env_report(
+        template_path,
+        env_path,
+        allow_extra=allow_extra,
+        strict=strict,
+    )
     return report["ok"], report["message"]

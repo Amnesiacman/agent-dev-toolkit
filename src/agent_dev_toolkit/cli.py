@@ -1,7 +1,15 @@
 import argparse
 import json
 from pathlib import Path
+from typing import Optional
 from .env_tools import init_env, doctor_env, doctor_env_report
+
+
+def _emit_output(text: str, output_path: Optional[str]):
+    if output_path:
+        Path(output_path).write_text(text + "\n", encoding="utf-8")
+    print(text)
+
 
 def build_parser():
     parser = argparse.ArgumentParser(
@@ -27,10 +35,19 @@ def build_parser():
         help="Ignore extra keys in .env that are not in template",
     )
     p_doc.add_argument(
+        "--strict",
+        action="store_true",
+        help="Fail on any difference including extra keys",
+    )
+    p_doc.add_argument(
         "--format",
         choices=("text", "json"),
         default="text",
         help="Output format for doctor command",
+    )
+    p_doc.add_argument(
+        "--output",
+        help="Write command output to file path",
     )
     return parser
 
@@ -51,15 +68,20 @@ def main(argv=None):
                 template_path,
                 env_path,
                 allow_extra=args.allow_extra,
+                strict=args.strict,
             )
-            print(json.dumps(report, ensure_ascii=True))
+            _emit_output(
+                json.dumps(report, ensure_ascii=True),
+                args.output,
+            )
             return 0 if report["ok"] else 1
         ok, msg = doctor_env(
             template_path,
             env_path,
             allow_extra=args.allow_extra,
+            strict=args.strict,
         )
-        print(msg)
+        _emit_output(msg, args.output)
         return 0 if ok else 1
 
     parser.print_help()
