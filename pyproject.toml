@@ -1,0 +1,17 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "agent-dev-toolkit"
+version = "0.1.0"
+description = "Automation-friendly CLI toolkit for everyday dev tasks"
+readme = "README.md"
+requires-python = ">=3.10"
+
+[project.scripts]
+agent-toolkit = "agent_dev_toolkit.cli:main"
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+addopts = "-q"
