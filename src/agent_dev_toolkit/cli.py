@@ -20,6 +20,11 @@ def build_parser():
     p_doc = env_sub.add_parser("doctor", help="Validate .env keys")
     p_doc.add_argument("--template", default=".env.example")
     p_doc.add_argument("--env-file", default=".env")
+    p_doc.add_argument(
+        "--allow-extra",
+        action="store_true",
+        help="Ignore extra keys in .env that are not in template",
+    )
     return parser
 
 def main(argv=None):
@@ -32,7 +37,11 @@ def main(argv=None):
         return 0 if ok else 1
 
     if args.command == "env" and args.env_command == "doctor":
-        ok, msg = doctor_env(Path(args.template), Path(args.env_file))
+        ok, msg = doctor_env(
+            Path(args.template),
+            Path(args.env_file),
+            allow_extra=args.allow_extra,
+        )
         print(msg)
         return 0 if ok else 1
 

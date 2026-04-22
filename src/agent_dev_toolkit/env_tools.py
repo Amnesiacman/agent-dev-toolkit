@@ -19,7 +19,7 @@ def init_env(template_path: Path, output_path: Path, force: bool = False):
     output_path.write_text(template_path.read_text(encoding="utf-8"), encoding="utf-8")
     return True, f"Created {output_path} from {template_path}"
 
-def doctor_env(template_path: Path, env_path: Path):
+def doctor_env(template_path: Path, env_path: Path, allow_extra: bool = False):
     if not template_path.exists():
         return False, f"Template not found: {template_path}"
     if not env_path.exists():
@@ -28,7 +28,11 @@ def doctor_env(template_path: Path, env_path: Path):
     env_keys = set(parse_template_keys(env_path.read_text(encoding="utf-8")))
     missing = sorted(template_keys - env_keys)
     extra = sorted(env_keys - template_keys)
+    if allow_extra:
+        extra = []
     if not missing and not extra:
+        if allow_extra:
+            return True, "Environment looks good: no missing keys."
         return True, "Environment looks good: no missing or extra keys."
     lines = ["Environment differences detected:"]
     if missing:

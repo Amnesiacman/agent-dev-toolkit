@@ -28,3 +28,11 @@ def test_doctor_ok(tmp_path: Path):
     e.write_text(c, encoding="utf-8")
     ok, _ = doctor_env(t, e)
     assert ok
+
+def test_doctor_allow_extra(tmp_path: Path):
+    t = tmp_path / ".env.example"
+    e = tmp_path / ".env"
+    t.write_text("A=1\n", encoding="utf-8")
+    e.write_text("A=1\nB=2\n", encoding="utf-8")
+    ok, msg = doctor_env(t, e, allow_extra=True)
+    assert ok and "no missing keys" in msg
